@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/meadori/k2/pkg/scan/host"
 	"github.com/meadori/k2/pkg/scan/port"
 )
 
@@ -62,10 +63,16 @@ func Run() {
 
 	begin, end := parseRange(portRangeSpec)
 
-	for _, host := range flag.Args() {
+	status := map[bool]string{false: "Down", true: "Up"}
+	for _, hostname := range flag.Args() {
+		up := host.Scan(hostname)
+		fmt.Printf("Host: %s\tStatus: %s\n", hostname, status[up])
+		if !up {
+			continue
+		}
 		for portn := begin; portn <= end; portn += 1 {
-			if port.Scan(host, portn) {
-				fmt.Printf("Host: %s\tPorts: %d/open/tcp/\n", host, portn)
+			if port.Scan(hostname, portn) {
+				fmt.Printf("Host: %s\tPorts: %d/open/tcp/\n", hostname, portn)
 			}
 		}
 	}
